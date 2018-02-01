@@ -1,1 +1,102 @@
+#include <stdlib.h>
+#include <stdio.h>
+int main(){
+    char name[32], age[32], height[32];
+    scanf("%s",name);
+    scanf("%s",age);
+    scanf("%s",height);
+    printf("name: %s\n",name);
+    printf("age: %s\n",age);
+    printf("height: %s\n",height);
+}
 
+#include <stdlib.h>
+#include <stdio.h>
+int main(){
+    FILE *F;
+    F=fopen("question2.txt","r");
+    int in[10];
+    for (int x=0;x<10;x++){
+        fscanf(F,"%d",&in[x]);
+        printf("%d\n",in[x]);
+    }
+}
+
+
+#include <stdlib.h>
+#include <stdio.h>
+struct Student{
+    int ID;
+    int age;
+    int Syear;
+};
+void save_student(struct Student S){
+    FILE *F;
+    F=fopen("students.txt","a");
+    fprintf(F,"%d,%d,%d\n",S.ID,S.age,S.Syear);
+}
+int main(){
+    int ID;
+    int age;
+    int Syear;
+    printf("input ID\n");
+    scanf("%d",&ID);
+    printf("input age\n");
+    scanf("%d",&age);
+    printf("input starting year\n");
+    scanf("%d",&Syear);
+    struct Student S;
+    S.ID=ID;
+    S.age=age;
+    S.Syear=Syear;
+    save_student(S);
+}
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+struct grade{
+    int ID;
+    int mark;
+};
+void grade_students(struct grade* S,int numStudents){
+    FILE *F;
+    int sum=0;
+    double mean;
+    double SD=0;
+    F=fopen("grades.txt","w");
+    for(int x=0;x<numStudents;x++){
+        fprintf(F,"%d,%d\n",S[x].ID,S[x].mark);
+        sum+=S[x].mark;
+    }
+    mean=((double)sum)/numStudents;
+    for (int x=0;x<numStudents;x++){
+        SD+=pow(S[x].mark-mean,2);
+    }
+    SD=sqrt(SD/(numStudents-1));
+    fprintf(F,"average: %f\n",mean);
+    fprintf(F,"standard deviation %f\n",SD);
+}
+int main(){
+    char* professor;
+    struct grade* grades;
+    int numStudents;
+    professor=calloc(256,sizeof(char));
+    printf("input name: ");
+    scanf("%s", professor);
+    printf("input num students: ");
+    scanf("%d", &numStudents);
+    grades=calloc(numStudents,sizeof(struct grade));
+
+    for (int x=0;x<numStudents;x++){
+        printf("intput ID#%d: ",x+1);
+        scanf("%d", &grades[x].ID);
+        printf("intput grade for student %d: ",grades[x].ID);
+        scanf("%d", &grades[x].mark);
+    }
+
+    grade_students(grades, numStudents);
+
+    free(professor);
+    free(grades);
+}
