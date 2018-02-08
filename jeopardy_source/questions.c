@@ -19,6 +19,18 @@ void initialize_game(void)
 // Displays each of the remaining categories and question dollar values that have not been answered
 void display_categories(void)
 {
+    for(int x=0;x<NUM_CATEGORIES;x++){
+        printf("%s\t",categories[x]);
+    }
+    printf("\n");
+    for(int x=0;x<5;x++){
+        for(int y=0;y<NUM_CATEGORIES;y++){
+            printf("%i",200*(x+1));
+            for(int z=0;z<(strlen(categories[y])/4);z++)
+                printf("\t");
+        }
+        printf("\n");
+    }
     // print categories and dollar values for each unanswered question in questions array
 }
 

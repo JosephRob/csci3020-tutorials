@@ -62,16 +62,21 @@ int main(int argc, char *argv[])
     while (game_state)
     {
         // EXAMPLE: This line gets a line of input from the user
-        fgets(buffer, BUFFER_LEN, stdin);
-        printf("[%s]", buffer);
+        //printf("[%s]", buffer);
         for(int x=0;x<strlen(buffer);x++){
             if(buffer[x]='\n')
             buffer[x]=' ';
         }
 
-		if (strcmp(buffer, "hello\n") == 0) printf(":)\n");
-		if (strcmp(buffer, "world\n") == 0) printf(":)\n");
+		//if (strcmp(buffer, "hello\n") == 0) printf(":)\n");
+		//if (strcmp(buffer, "world\n") == 0) printf(":)\n");
 
+        display_categories();
+
+        
+        fgets(buffer, BUFFER_LEN, stdin);
+        
+        
         // Call functions from the questions and players source files
 
         // Execute the game until all questions are answered
