@@ -14,7 +14,19 @@
 void initialize_game(void)
 {
     // initialize each question struct and assign it to the questions array
+	for(int i=0;i<NUM_CATEGORIES;i++){
+		for(int j=0;j<(NUM_CATEGORIES/NUM_QUESTIONS);j++){
+			int num = (i*NUM_CATEGORIES/NUM_QUESTIONS)+j;
+			int val = 200+j*200;
+			strcpy(questions[num].category,categories[i]);
+			strcpy(questions[num].question,questionArray[j]);
+			questions[num].value = val;
+			strcpy(questions[num].answer,answerArray[j]);
+			questions[num].answered = false;
+		}
+	}
 }
+
 
 // Displays each of the remaining categories and question dollar values that have not been answered
 void display_categories(void)
@@ -37,19 +49,61 @@ void display_categories(void)
 // Displays the question for the category and dollar value
 void display_question(char *category, int value)
 {
+	for(int i=0;i<NUM_CATEGORIES;i++){
+		for(int j=0;j<(NUM_CATEGORIES/NUM_QUESTIONS);j++){
+			int num = (i*NUM_CATEGORIES/NUM_QUESTIONS)+j; 
+			if (strcmp(category,questions[num].category) ==0){
+				if(value ==questions[num].value){
+					printf("%s",questions[num].question);
+					}
+			}
+			else{
+				break;
+			}
+		}
+	}
 
 }
 
 // Returns true if the answer is correct for the question for that category and dollar value
 bool valid_answer(char *category, int value, char *answer)
 {
-    // Look into string comparison functions
+    for(int i=0;i<NUM_CATEGORIES;i++){
+		for(int j=0;j<(NUM_CATEGORIES/NUM_QUESTIONS);j++){
+			int num = (i*NUM_CATEGORIES/NUM_QUESTIONS)+j; 
+			if (strcmp(category,questions[num].category) ==0){
+				if(value ==questions[num].value){
+					if(strstr(answer,questions[num].answer)!=NULL){
+						return true;
+					}
+				}
+			}
+			else{
+				break;
+			}
+		}
+	}
     return false;
 }
 
 // Returns true if the question has already been answered
 bool already_answered(char *category, int value)
 {
+	for(int i=0;i<NUM_CATEGORIES;i++){
+		for(int j=0;j<(NUM_CATEGORIES/NUM_QUESTIONS);j++){
+			int num = (i*NUM_CATEGORIES/NUM_QUESTIONS)+j; 
+			if (strcmp(category,questions[num].category) ==0){
+				if(value ==questions[num].value){
+					if(questions[num].answered == false){
+						return true;
+					}
+				}
+			}
+			else{
+				break;
+			}
+		}
+	}
     // lookup the question and see if it's already been marked as answered
     return false;
 }
