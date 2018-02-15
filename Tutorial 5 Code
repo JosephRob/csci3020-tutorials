@@ -84,3 +84,56 @@ int main(void)
 	return 0;
 	
 }
+//Question 3
+#define _XOPEN_SOURCE 600 // required for barriers to work
+#include <stdlib.h>
+#include <stdio.h>
+#include <pthread.h>
+#include <string.h>
+#include <time.h>
+struct student{
+int grade;
+int id;
+char name [30];
+};
+struct student records[5];
+void * bellcurve(void *record){
+	struct student *data;
+	data = record;
+	data->grade = (int)data->grade*(1.5);
+	printf("Student Name: %s\n",data->name);
+	printf("Student ID:%d\n",data->id);
+    	printf("Grade:%d\n",data->grade);
+	
+    	return NULL;
+}
+int main(void)
+{
+	int i,ID,g;
+	char n [30];
+	pthread_t thr[5];
+	printf("Enter 5 Student student names, student ids and grades:");
+	for(i=0;i<5;i++){
+		scanf("%29s",n);	
+		scanf("%d",&ID);	
+		scanf("%d",&g);
+		strcpy(records[i].name,n);
+		records[i].id = ID;
+		records[i].grade = g;
+	}
+	for(int i = 0; i < 5; ++i){
+		
+        	if(pthread_create(&thr[i], NULL, bellcurve,(void *)&records[i])){
+            		printf("Could not create thread %d\n", i);
+            		return -1;
+        	}
+    	}
+	for(int i = 0; i < 5; ++i){
+        	if(pthread_join(thr[i], NULL)){
+            		printf("Could not join thread %d\n", i);
+            		return -1;
+        	}
+    	}
+	return 0;
+	
+}
