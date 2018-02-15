@@ -104,7 +104,7 @@ int main(void){
     for(int x=0;x<5;x++){
         pthread_join(A[x],NULL);
     }
-}*/
+}
 int total_grade=0;
 int busy=0;
 void class_total(int grade){
@@ -135,4 +135,66 @@ int main(){
     }
     printf("total=%d\n",total_grade);
 
+}*/
+
+int total_grade=0;
+int total_bell=0;
+int busy=0,done=0;
+int grades[10];
+void class_total(int grade){
+    total_grade+=grade;
+    //printf("%d\t%d\n",grade,total_grade);
+}
+void bell(int grade){
+    total_bell+=grade*1.5;
+    FILE * f=fopen("bellcurve.txt","a");
+    fprintf(f,"%d\n",(int)(grade*1.5));
+    //printf("%d\n",(int)(grade*1.5));
+    fclose(f);
+} 
+void * run(void * args){
+    while (busy==1);
+    busy=1;
+    int grade=*((int *)args);
+    printf("%d\n",grade);
+    class_total(grade);
+    bell(grade);
+    busy=0;
+}
+void * readAll(){
+    FILE * in;
+    in=fopen("grades.txt","r");
+    for (int x=0;x<10;x++){
+        int temp;
+        //printf("get grade %d \t",x);
+        fscanf(in,"%i", &temp);
+        grades[x]=temp;
+        //printf("%d\n",grades[x]);
+    }
+    fclose(in);
+
+}
+int main(){
+    FILE * out;
+    pthread_t A[10];
+    pthread_t read;
+    int grades[10];
+    out=fopen("bellcurve.txt","w");
+    fprintf(out,"");
+    fclose(out);
+    pthread_create(&read,NULL,readAll,NULL);
+    pthread_join(read,NULL);
+
+    //barrier here
+
+    for(int x=0;x<10;x++){
+        pthread_create(&A[x],NULL,run,(void *)&grades[x]);
+    }
+    for(int x=0;x<10;x++){
+        pthread_join(A[x],NULL);
+    }
+    out=fopen("bellcurve.txt","a");
+    fprintf(out,"total=%d\n",total_grade);
+    fprintf(out,"total bell=%d\n",total_bell);
+    fclose(out);
 }
