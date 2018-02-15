@@ -25,7 +25,8 @@ void display_categories(void)
     printf("\n");
     for(int x=0;x<5;x++){
         for(int y=0;y<NUM_CATEGORIES;y++){
-            printf("%i",200*(x+1));
+            if(findQ(categories[y],200*(x+1)).answered==0)
+                printf("%i",200*(x+1));
             for(int z=0;z<(strlen(categories[y])/4);z++)
                 printf("\t");
         }
@@ -50,6 +51,13 @@ bool valid_answer(char *category, int value, char *answer)
 // Returns true if the question has already been answered
 bool already_answered(char *category, int value)
 {
-    // lookup the question and see if it's already been marked as answered
+    
     return false;
+}
+
+struct question* findQ(char *category, int value){
+    for (int x=0;x<NUM_QUESTIONS;x++){
+        if (strcmp(questions[x].category,category)==0 && questions[x].value==value)
+            return &questions[x];
+    }
 }
