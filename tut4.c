@@ -1,4 +1,5 @@
 #include <pthread.h>
+#include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
@@ -26,7 +27,7 @@ int main(void){
     pthread_join(A,NULL);
     pthread_join(B,NULL);
 }*/
-void delay(int time){
+/*void delay(int time){
     clock_t goal=time+clock();
     while(goal>clock());
 }
@@ -50,6 +51,55 @@ int main(void){
     }
     for(int x=0;x<5;x++){
         pthread_create(&A[x],NULL,doStudent,(void *)&grade[x]);
+    } 
+    for(int x=0;x<5;x++){
+        pthread_join(A[x],NULL);
+    }
+}*/
+struct student{
+    int grade;
+    int ID;
+    char name[64];
+};
+void delay(int time){
+    clock_t goal=time+clock();
+    while(goal>clock());
+}
+int bellCurve(int grade){
+    return grade*1.5;
+}
+void * doStudent(void  * arg){
+    struct student data=*((struct student *)arg);
+    delay(rand()%1000000);
+    printf("%s\t%d\t%d\n", data.name,data.ID, bellCurve(data.grade));
+}
+int main(void){
+    srand(clock());
+    pthread_t A[5];
+    int grade[5]; 
+    int studentID[5]; 
+    char name[5][64]; 
+    for(int x=0;x<5;x++){
+        int temp;
+        printf("input grade %d: ",x);
+        scanf("%i", &temp);
+        grade[x]=temp;
+        printf("input student ID: ");
+        scanf("%i", &temp);
+        studentID[x]=temp;
+        char tempS[64];
+        printf("input name: ");
+        scanf("%s", tempS);
+        strcpy(name[x],tempS);
+        //name[x]=tempS;
+    }
+    struct student data[5];
+    for(int x=0;x<5;x++){
+        strcpy(data[x].name,name[x]);
+        data[x].ID=studentID[x];
+        data[x].grade=grade[x];
+    //printf("\t%s\t%d\t%d\n", data.name,data.ID, bellCurve(data.grade));
+        pthread_create(&A[x],NULL,doStudent,(void *)&data[x]);
     } 
     for(int x=0;x<5;x++){
         pthread_join(A[x],NULL);
