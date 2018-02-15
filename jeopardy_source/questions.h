@@ -14,13 +14,47 @@
 #define NUM_CATEGORIES 3
 // The number of questions, you can use this in your functions in
 // questions.c, this can be accessed in questions.c
-#define NUM_QUESTIONS 12
+#define NUM_QUESTIONS 15
 
 // List of 3 categories as array of strings
 static char categories[NUM_CATEGORIES][MAX_LEN] = {
     "programming", 
     "algorithms", 
     "databases"
+};
+static char questionArray[NUM_QUESTIONS][MAX_LEN] = {
+	"temp1", 
+	"temp2",
+	"temp3",
+	"temp4",
+	"temp5",
+	"temp6",
+	"temp7",
+	"temp8",
+	"temp9",
+	"temp10",
+	"temp11",
+	"temp12",
+	"temp13",
+	"temp14",
+	"temp15"
+};
+static char answerArray[NUM_QUESTIONS][MAX_LEN] = {
+	"ans1", 
+	"ans2",
+	"ans3",
+	"ans4",
+	"ans5",
+	"ans6",
+	"ans7",
+	"ans8",
+	"ans9",
+	"ans10",
+	"ans11",
+	"ans12",
+	"ans13",
+	"ans14",
+	"ans15"
 };
 
 // Questions struct for each question
