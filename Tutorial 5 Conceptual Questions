@@ -1,0 +1,28 @@
+Tutorial 5
+Student Names:
+Joseph Robertson, Shomari Simpson
+
+Conceptual Questions:
+
+1.Read the pthread documentation and explain the following three functions: pthread_create, pthread_join, pthread_exit.
+
+Pthread_create: starts a new thread in the calling process
+Pthread_join: waits for the thread specified to thread to terminate
+Pthread_exit: terminates the calling thread and makes the value value_ptr available to any successful join with the terminating thread
+
+2.Explain how the memory of threads work in comparison to processes, do threads share the same memory, can threads access the memory of other threads?
+
+Both threads and processes and threads are independent sequences of execution. The difference is that threads of the the same process run in a shared memory space while processes run in separate memory spaces.
+
+3. Name the differences between multithreading and multiprocessing (multiple processes). What are the advantages and disadvantages of each?
+
+The difference between multithreading and multiprocessing are the same as differences between threads and processes in question 2. For multithreading, it is able to share the same memory which provides faster access to shared data but race conditions must be handled to ensure proper output. For multiprocessing, the spawning of processes is slower in comparison to threads but most eliminates that need for synchronization among processes since they have separate memory spaces.   
+
+4. Provide an explanation of mutual exclusion , what is a critical section?
+
+Mutual exclusion is a program object that prevents simultaneous access to a shared resource. Critical section is a pieces of code in which processes or threads access a shared resource that must be executed atomically.
+
+5.Research the functions used to perform mutual exclusion with pthreads and explain the purpose of each function.
+Semaphore: Using counting or Binary semaphores can be used to control access to a given resource finite number of instances in bound buffer or within a range of 0-1, respectively.
+
+Mutex Lock: acquiring and releasing of a lock atomically using hardware mechanisms,  mutex locks can be used to protect critical region and prevent race conditions.
