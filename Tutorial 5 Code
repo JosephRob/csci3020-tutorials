@@ -45,3 +45,42 @@ int main(int argc, char **argv)
     }
     return 0;
 }
+//QUESTION 2
+#define _XOPEN_SOURCE 600 // required for barriers to work
+#include <stdlib.h>
+#include <stdio.h>
+#include <pthread.h>
+int grade[5];
+void * bellcurve(void *arg)
+{
+	int i = (int)arg;
+	grade[i] = (int)grade[i]*(1.5);
+    	printf("Grade %d:%d\n",i,grade[i]);
+	
+
+    	return NULL;
+}
+int main(void)
+{
+	int i;
+	pthread_t thr[5];
+	
+	printf("Enter 5 Student Grades:");
+	for(i=0;i<5;i++){
+		scanf("%d",&grade[i]);
+	}
+	for(int i = 0; i < 5; ++i){
+        	if(pthread_create(&thr[i], NULL, &bellcurve, (void*)i)){
+            		printf("Could not create thread %d\n", i);
+            		return -1;
+        	}
+    	}
+	for(int i = 0; i < 5; ++i){
+        	if(pthread_join(thr[i], NULL)){
+            		printf("Could not join thread %d\n", i);
+            		return -1;
+        	}
+    	}
+	return 0;
+	
+}
