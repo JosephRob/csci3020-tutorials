@@ -137,26 +137,28 @@ int main(){
 
 }*/
 
-int total_grade=0;
-int total_bell=0;
+double total_grade=0;
+double total_bell=0;
 int busy=0,done=0;
-int grades[10];
-void class_total(int grade){
+double grades[10];
+pthread_barrier_t barrier;
+void class_total(double grade){
     total_grade+=grade;
     //printf("%d\t%d\n",grade,total_grade);
 }
-void bell(int grade){
+void bell(double grade){
     total_bell+=grade*1.5;
     FILE * f=fopen("bellcurve.txt","a");
-    fprintf(f,"%d\n",(int)(grade*1.5));
+    fprintf(f,"%f\n",(grade*1.5));
     //printf("%d\n",(int)(grade*1.5));
     fclose(f);
 } 
 void * run(void * args){
     while (busy==1);
     busy=1;
-    int grade=*((int *)args);
-    printf("%d\n",grade);
+    //printf("%d\n",(int)args);
+    double grade=grades[(int)args];
+    //printf("%d\n",grade);
     class_total(grade);
     bell(grade);
     busy=0;
@@ -165,36 +167,40 @@ void * readAll(){
     FILE * in;
     in=fopen("grades.txt","r");
     for (int x=0;x<10;x++){
-        int temp;
+        float temp;
         //printf("get grade %d \t",x);
-        fscanf(in,"%i", &temp);
+        fscanf(in,"%f", &temp);
         grades[x]=temp;
-        //printf("%d\n",grades[x]);
+        //printf("%f\t%f\n",temp,grades[x]);
     }
     fclose(in);
+    pthread_barrier_wait(&barrier);
 
 }
 int main(){
     FILE * out;
     pthread_t A[10];
     pthread_t read;
-    int grades[10];
+    pthread_barrier_init(&barrier,NULL,2);
     out=fopen("bellcurve.txt","w");
     fprintf(out,"");
     fclose(out);
     pthread_create(&read,NULL,readAll,NULL);
-    pthread_join(read,NULL);
+    //pthread_join(read,NULL);
+    pthread_barrier_wait(&barrier);
 
     //barrier here
 
     for(int x=0;x<10;x++){
-        pthread_create(&A[x],NULL,run,(void *)&grades[x]);
+        pthread_create(&A[x],NULL,run,(void *)x);
     }
     for(int x=0;x<10;x++){
         pthread_join(A[x],NULL);
     }
     out=fopen("bellcurve.txt","a");
-    fprintf(out,"total=%d\n",total_grade);
-    fprintf(out,"total bell=%d\n",total_bell);
+    printf("total=%f\n",total_grade);
+    printf("total bell=%f\n",total_bell);
+    printf("average=%f\n",total_grade/10.0);
+    printf("average bell=%f\n",total_bell/10.0);
     fclose(out);
 }
