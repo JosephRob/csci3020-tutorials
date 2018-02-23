@@ -24,11 +24,11 @@ void initialize_game(void){
         }
         for(int x=0;x<4;x++){
             fgets(line, 255,(FILE * )f);
-            printf("%s",line);
+            //printf("%s",line);
             token1=strtok(line,"\t");
             token2=strtok(NULL,"\t");
             token3=strtok(NULL,"\t");
-            printf("AAA\n");
+            //printf("AAA\n");
             strcpy(questions[4*y+x].category,token1);
             strcpy(questions[4*y+x].question,token2);
             strcpy(questions[4*y+x].answer,token3);
@@ -67,20 +67,22 @@ void display_categories(void){
 
 // Displays the question for the category and dollar value
 void display_question(char *category, int value){
+    printf("|%s|\t%d\n",category,value);
     for(int x=0;x<3;x++){
         if(strcmp(questions[4*x].category,category)){
+            printf("%s\t%d:\t",category,value);
             switch(value){
                 case 100:
-                printf("%s\n",questions[x*4]);
+                printf("%s\n",questions[x*4].question);
                 break;
                 case 200:
-                printf("%s\n",questions[x*4+1]);
+                printf("%s\n",questions[x*4+1].question);
                 break;
                 case 300:
-                printf("%s\n",questions[x*4+2]);
+                printf("%s\n",questions[x*4+2].question);
                 break;
                 case 400: 
-                printf("%s\n",questions[x*4+3]);
+                printf("%s\n",questions[x*4+3].question);
                 break;
                 default:
                 printf("invalid value\n");
@@ -90,13 +92,20 @@ void display_question(char *category, int value){
 }
 
 // Returns true if the answer is correct for the question for that category and dollar value
-bool valid_answer(char *category, int value, char *answer)
-{
+bool valid_answer(char *category, int value, char *answer){
     // Look into string comparison functions
     return false;
 }
 
 // Returns true if the question has already been answered
+bool isQ(char *category, int value){
+    for(int x=0;x<3;x++){
+        if(strcmp(questions[4*x].category,category)==0 && value%100==0){
+            return 1;
+        }
+    }
+    return 0;
+}
 bool already_answered(char *category, int value){
     for(int x=0;x<3;x++){
         if(strcmp(questions[4*x].category,category)){

@@ -40,7 +40,9 @@ int main(int argc, char *argv[])
         printf("player name %d:\t",x);
         char temp[BUFFER_LEN];
         fgets(temp, BUFFER_LEN,stdin);
+        //printf("|%s|\n",temp);
         strcpy(players[x].name, strtok(temp,"\n"));
+        //printf("|%s|\n",players[x].name);
         players[x].score=0;
     }
     
@@ -58,16 +60,36 @@ int main(int argc, char *argv[])
     game_state = 1;
     while (game_state){
         for(int x=0;x<NUM_PLAYERS;x++){printf("%s\t%d\n",players[x].name,players[x].score);}//scoreboard
-        display_categories();
         // EXAMPLE: This line gets a line of input from the user
-        fgets(buffer, BUFFER_LEN, stdin);
-
-
+        while (true){
+            printf("name of player to choose question: ");
+            fgets(buffer, BUFFER_LEN, stdin);
+            char *name=strtok(buffer,"\n");
+            if(player_exists(&players, NUM_PLAYERS,name)){
+                break;
+            }
+        }
+        char question[BUFFER_LEN];
+        int amount;
+        //while(1){
+            display_categories();
+            printf("category: ");
+            fgets(question,BUFFER_LEN,stdin);
+            strcpy(question,strtok(question,"\n"));
+            printf("amount: ");
+            scanf("%d",&amount);
+            printf("%s\t%d\n",question,amount);
+            //if(isQ(question,amount)){
+                //break;
+            //}
+        //}
+        display_question(question,amount);
         // Call functions from the questions and players source files
 
         // Execute the game until all questions are answered
 
         // Display the final results and exit
+        break;
     }
     return EXIT_SUCCESS;
 }

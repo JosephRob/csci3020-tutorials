@@ -14,10 +14,11 @@
 bool player_exists(struct player *players, int num_players, char *name){
     for(int x=0;x<num_players;x++){
         if(strcmp(players[x].name,name)==0){
-            return true;
+            //printf("found\n");
+            return 1;
         }
     }
-    return false;
+    return 0;
 }
 
 // Go through the list of players and update the score for the 
