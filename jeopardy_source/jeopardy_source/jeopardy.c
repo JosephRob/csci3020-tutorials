@@ -58,6 +58,7 @@ int main(int argc, char *argv[])
 
     // Perform an infinite loop getting command input from users until game ends
     game_state = 1;
+    char current[BUFFER_LEN];
     while (game_state){
         for(int x=0;x<NUM_PLAYERS;x++){printf("%s\t%d\n",players[x].name,players[x].score);}//scoreboard
         // EXAMPLE: This line gets a line of input from the user
@@ -66,30 +67,49 @@ int main(int argc, char *argv[])
             fgets(buffer, BUFFER_LEN, stdin);
             char *name=strtok(buffer,"\n");
             if(player_exists(&players, NUM_PLAYERS,name)){
+                strcpy(current,name);
                 break;
             }
         }
         char question[BUFFER_LEN];
         int amount;
-        //while(1){
+        while(1){
             display_categories();
             printf("category: ");
             fgets(question,BUFFER_LEN,stdin);
             strcpy(question,strtok(question,"\n"));
             printf("amount: ");
             scanf("%d",&amount);
-            printf("%s\t%d\n",question,amount);
-            //if(isQ(question,amount)){
-                //break;
-            //}
-        //}
+            //printf("%s\t%d\n",question,amount);
+            fgets(buffer, BUFFER_LEN, stdin);
+            if(isQ(question,amount)){
+                printf("\t\t%d\n",already_answered(question,amount));
+                if(already_answered(question,amount)==0){
+                    break;
+                }
+                else{
+                    printf("already answred\n");
+                }
+            }
+            else{
+                printf("no\n");
+            }
+        }
         display_question(question,amount);
+
+        fgets(buffer, BUFFER_LEN,stdin);
+        strcpy(buffer,strtok(buffer,"\n"));
+        if(valid_answer(question,amount,buffer)){
+            printf("%d points to %s.\n",amount,current);
+            update_score(&players,NUM_PLAYERS,current,amount);
+        }
+
         // Call functions from the questions and players source files
 
         // Execute the game until all questions are answered
 
         // Display the final results and exit
-        break;
+        game_state=done();
     }
     return EXIT_SUCCESS;
 }

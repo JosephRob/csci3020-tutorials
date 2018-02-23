@@ -41,8 +41,12 @@ extern void display_categories(void);
 // Displays the question for the category and dollar value
 extern void display_question(char *category, int value);
 
+// Displays the answer for the category and dollar value
+extern char* display_answer(char *category, int value);
+
 // Returns true if the answer is correct for the question for that category and dollar value
 extern bool valid_answer(char *category, int value, char *answer);
+extern bool done();
 
 // Returns true if the question has already been answered
 extern bool already_answered(char *category, int value);
