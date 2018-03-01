@@ -28,6 +28,7 @@ sem_getValue:updates the location reference by the sval argument to have the val
 Sem_init:used to initialise the unnamed semaphore referred to by sem
 Sem_open:established a connection between a named semaphore and a process
 Sem_post:unlocks the semaphore reference by sem by performing a semaphore unlock operation on that semaphore.
-Sem_trywait:
-Sem_unlink:
-sem_wait:
+Sem_trywait:locks the semaphore referenced by sem only if the semaphore is currently not locked
+Sem_unlink:removes the semaphore named by the string name.
+Sem_wait:locks the semaphore referenced by the sem by performing a semaphore lock operation on the semaphore
+
