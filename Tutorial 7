@@ -1,0 +1,22 @@
+Student Names:
+Joseph Robertson, Shomari Simpson
+Conceptual Questions
+1. What are signals, what is their purpose? 
+
+Signals are software interrupts that are delivered to a process. Signals are used to report exceptional situation to an executing program
+
+2. Explain the following signals: SIGINT, SIGTSTP, SIGCONT how can they be used to suspend, resume, and terminate a program? 
+
+SIGINT is sent to a process by its controlling terminal when a user wished to interrupt the process which can be initiated by pressing CTRL+C. SIGSTOP instructs the operating system to stop a process for later resumption. SIGCONT instructs the operating system to continue a process previously stopped by SIGSTOP.
+
+3. Explain the following functions: kill(), waitpid() how can they be used to terminate a process and wait until it has ended before continuing? 
+
+waitpid() suspends the calling process until a child process ends or is stopped when the system receives status information on the child. kill() sends a signal to a process of a group of processes specified by pid for termination. 
+
+4. Explain what a linked-list (queue) is, what does FIFO mean? What are the common operations that a linked-list must have? 
+
+A linked list is a linear collection of data elements, in which linear order is not given by their physical placement in memory and each element points to the next in the list. FIFO mean first in, first out which describes a queue where the the oldest entries will be removed first.
+
+5. Explain the structure of a linked-list as implemented in C, explain how would you implement the operations to add and remove values from the queue? 
+
+In C, a linked lists are sets of  dynamically allocated nodes, arranged in such a way that each node contains one value and one pointer. To add values, the added node would have to point to the node directly in front of it and the node behind is would need to point to the new node.  
