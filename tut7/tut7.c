@@ -21,20 +21,19 @@ struct queue{
 };
 struct queue base;
 void push(struct proc process){
-    printf("%s\n",process.name);
-    struct queue A;
-    A.process = process;
-    A.next=base.next;
-    base.next=&A;
+    struct queue * A = (struct queue *)malloc(sizeof(struct queue));
+    (*A).process = process;
+    (*A).next=base.next;
+    base.next=A;
+    //printf("%s->%s\n",(*base.next).process.name,(*(*base.next).next).process.name);
 
     //printf("|%s|\n",(*base.next).process.name);
 }
 void print(struct queue * thisOne){
     if((*thisOne).next!=NULL){
-    printf("%s\n",(*thisOne).process.name);
-
         print((*thisOne).next);
     }
+    printf("%s\t%i\t%i\t%i\n",(*thisOne).process.name,(*thisOne).process.priority,(*thisOne).process.pid,(*thisOne).process.runtime);
 }
 int main(){
     char name [256];
@@ -49,7 +48,7 @@ int main(){
         scanf("%i,",&pid);
         scanf("%i",&runtime);
         struct proc process;
-        strcpy(process.name,name);
+        strcpy(process.name,strtok(name,","));
         process.priority=priority;
         process.pid=pid;
         process.runtime=runtime;
