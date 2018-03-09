@@ -1,0 +1,349 @@
+Student Names:
+Joseph Robertson, Shomari Simpson
+Conceptual Questions
+1.What is fork(), how does it differ from multi-threading (pthreads)?
+
+Fork is used to create processes while pthreads creates threads. The major difference between the two are that threads have shared memory while process do not. 
+
+2.What is inter-process communication (IPC)? Describe methods of performing IPC.
+
+Inter-process communication refers to the mechanisms an operating system provides to allow the processes to manage shared data. This can be achieved in the form of a a record stored on a disk and can be read by processes, a pipe that can send unidirectional data between two processes, or a signal that remotely trigger a partnered process. 
+
+3.Provide an explanation of semaphores, how do they work, how do they
+differ from mutual exclusion?
+
+A semaphore is a variable used to control access to a common resource by multiple processes. The variable can be used as a counting semaphore that allow a certain amount of processes to access a common resource or a binary semaphore that only allows one process access. 
+
+4.Provide an explanation of wait (P) and signal (V).
+
+Wait is called when a process wants access to a resource and must wait until the resource is available. When is gets access, it decrements the semapore, 
+
+Signal is called when a process has finished using a resource and increments the semaphore to notify other processes that the resource is available. 
+
+5.Research the main functions used for semaphores in<semaphore.h>and explain each function.
+
+Sem_close:used to indicate that the calling process is finished using the name semapore indicated by sem
+Sem_destroy:is used to destroy the unnamed semaphore indicated by sem
+sem_getValue:updates the location reference by the sval argument to have the value of the semaphore referenced by sem without affecting the state of the semaphore
+Sem_init:used to initialise the unnamed semaphore referred to by sem
+Sem_open:established a connection between a named semaphore and a process
+Sem_post:unlocks the semaphore reference by sem by performing a semaphore unlock operation on that semaphore.
+Sem_trywait:locks the semaphore referenced by sem only if the semaphore is currently not locked
+Sem_unlink:removes the semaphore named by the string name.
+Sem_wait:locks the semaphore referenced by the sem by performing a semaphore lock operation on the semaphore
+
+Quesiton 1:
+#define _XOPEN_SOURCE 700 // required for barriers to work
+#include <stdlib.h>
+#include <stdio.h>
+#include <pthread.h>
+#include <semaphore.h>
+#include <time.h>
+int main(void){
+    int pid = fork();
+    // child process
+        if (pid==0){
+        int pid2 = fork();
+        if (pid2==0){
+
+                FILE *fp;
+            char buff[255];
+
+               fp = fopen("child1.txt", "w+");
+               fputs("child 1\n", fp);
+            fclose(fp);
+            sleep(1);
+            fp = fopen("child1.txt", "r");
+            fgets(buff, 255, (FILE*)fp);
+               printf("child1.txt: %s\n", buff );
+               fclose(fp);
+        }
+        else{
+            FILE *fp;
+            char buff[255];
+
+               fp = fopen("child2.txt", "w+");
+               fputs("child 2\n", fp);
+            fclose(fp);
+            sleep(1);
+               fp = fopen("child2.txt", "r");
+            fgets(buff, 255, (FILE*)fp);
+               printf("child2.txt: %s\n", buff );
+               fclose(fp);
+        }
+    }
+
+       // parent process b
+        else{     
+            printf("Hello from Parent!\n");
+    }
+}
+
+Question 2:
+#define _XOPEN_SOURCE 700 // required for barriers to work
+#include <stdlib.h>
+#include <stdio.h>
+#include <pthread.h>
+#include <semaphore.h>
+#include <time.h>
+int main(void){
+    pid_t pid = fork();
+    int res;
+    // child process
+        if (pid==0){
+        sleep(1);
+        printf("Child process\n");
+        exit(1);
+    }
+    //parent process
+    else{
+        pid = wait(&res);
+        printf("Parent process\n");
+        if (WIFEXITED(res))
+            printf("exit status = %d\n", WEXITSTATUS(res));
+            return 0;
+    }
+}
+Question 3
+#define _XOPEN_SOURCE 700 // required for barriers to work
+#include <stdlib.h>
+#include <stdio.h>
+#include <pthread.h>
+#include <semaphore.h>
+#include <time.h>
+int moving_sum[5] = {0,0,0,0,0};
+//pthread_mutex_t m=PTHREAD_MUTEX_INITIALIZER;
+sem_t mutex;
+void *factorial(void *i){
+    int index = *((int*)i);
+    int prev;
+    int factorial=1;
+    int value = moving_sum[index];
+    if (index>0){
+        while(moving_sum[index-1]==0);    
+        prev = moving_sum[index-1];
+    }
+    else{
+        prev = 0;
+    }
+    //wait
+        sem_wait(&mutex);
+            printf("\nEntered..\n");
+    for (int x=1;x<=value+1;x++){
+        //critical section
+        factorial=factorial*x;
+    }
+    moving_sum[index]=factorial+prev;
+    printf("index %d:%d",index,factorial);
+    //signal
+        printf("\nJust Exiting...\n");
+        sem_post(&mutex);
+    return 0;
+}
+int main(void){
+    printf("Please input first integer value: \n");
+        scanf("%d", &moving_sum[0]);
+    printf("Please input second integer value: \n");
+    scanf("%d", &moving_sum[1]);
+    printf("Please input third integer value: \n");
+    scanf("%d", &moving_sum[2]);
+    printf("Please input fourth integer value: \n");
+    scanf("%d", &moving_sum[3]);
+    printf("Please input fifth integer value: \n");
+    scanf("%d", &moving_sum[4]);
+    
+    sem_init(&mutex, 0, 1);
+    pthread_t threads[5];
+    int rc;
+    int i;
+    int *arg = malloc(sizeof(int));
+    printf("creating threads\n");
+    for( i=0; i<5; i++){
+        int j = i;
+        *arg =j;
+        rc = pthread_create(&threads[i], NULL, factorial, (void *)arg);
+        if (rc) {
+                 printf("Error:unable to create thread\n");
+                 exit(-1);
+              }
+    }
+    free(arg); arg = NULL;
+    for( i=0; i<5; i++){
+        rc = pthread_join(threads[i], NULL);
+        if (rc) {
+                 printf("Error:unable to create join\n");
+                 exit(-1);
+              }    
+    }
+    printf("Final:");
+    for( i=0; i<5; i++){
+        printf("%d ",moving_sum[i]);
+    }
+    sem_destroy(&mutex);
+    pthread_exit(NULL);
+    
+
+}
+Question 4
+#define _XOPEN_SOURCE 700 // required for barriers to work
+#include <stdlib.h>
+#include <stdio.h>
+#include <pthread.h>
+#include <semaphore.h>
+#include <time.h>
+#define NUMBERS 10
+sem_t mutex;
+int buffer[5]={0,0,0,0,0};
+void *producer(void *arg){
+    int *arr = (int *) arg;
+    for(int i=1;i<=NUMBERS;i++){
+        int r = rand() % 2;
+        int produced=1;
+            //sleep(r);
+        while(produced==1){        
+            for(int j=0;j<5;j++){
+                sleep(1);
+                //wait
+                    sem_wait(&mutex);
+                    printf("\nPEntered..\n");
+                if(buffer[j]==0){
+                    //critical section
+                    buffer[j]=arr[i];
+                    printf("Produced %d",buffer[j]);
+                    produced=0;
+                    //signal
+                    printf("\nCJust Exiting...\n");
+                        sem_post(&mutex);
+                    break;        
+                }
+            //signal
+                printf("\nPJust Exiting...\n");
+                sem_post(&mutex);
+            }
+        }
+    }
+}
+void *consumer(){
+    for(int i=1;i<=NUMBERS;i++){
+        int r = rand() % 2;
+        int comsumed=1;
+            //sleep(r);
+        while(comsumed==1){
+            for(int j=0;j<5;j++){
+                sleep(1);    
+                //wait
+                    sem_wait(&mutex);
+                    printf("\nCEntered..\n");
+                //critical section
+                if(buffer[j]=i){
+                    buffer[j]=0;
+                    printf("Comsumed %d",i);
+                    comsumed=0;
+                    //signal
+                    printf("\nCJust Exiting...\n");
+                        sem_post(&mutex);
+                    break;
+                }
+            //signal
+                printf("\nCJust Exiting...\n");
+                sem_post(&mutex);
+            }
+        }
+    }
+}
+int main(void){
+    sem_init(&mutex, 0, 1);
+    int p,c;
+    int arr[10];
+    for(int i=0;i<NUMBERS;i++){
+        printf("Please input value %d: \n",i);
+            scanf("%d", &arr[i]);
+    }
+    pthread_t con,pro;
+    
+    p = pthread_create(&pro, NULL, producer, arr);
+    c = pthread_create(&con, NULL, consumer, NULL);
+
+    p = pthread_join(pro, NULL);
+    c = pthread_join(con, NULL);
+    sem_destroy(&mutex);
+    return 0;
+}
+Question 5
+#define _XOPEN_SOURCE 700 // required for barriers to work
+#include <stdlib.h>
+#include <stdio.h>
+#include <pthread.h>
+#include <semaphore.h>
+#include <time.h>
+int total_sum=0;
+sem_t mutex;
+void *factorial(void *arg){
+    int value = ((int*)arg);
+    int factorial=1;
+    //wait
+    sem_wait(&mutex);
+        printf("\nEntered..\n");
+    for (int x=1;x<=value;x++){
+        //critical section
+        factorial=factorial*x;
+    }
+    total_sum+=factorial;
+    printf("Current factorial %d\n",factorial);
+    //signal
+        printf("\nJust Exiting...\n");
+        sem_post(&mutex);
+    return 0;
+}
+int main(void){
+    int arr[5];
+    FILE *fp;
+    char buff[255];
+    int res;
+    //int *arg = malloc(sizeof(int));
+    int rc;
+    sem_init(&mutex, 0, 1);
+    pthread_t threads[5];
+       fp = fopen("numbers.txt", "w+");
+    for(int i=0;i<5;i++){
+        printf("Please input value %d: \n",i);
+            scanf("%d", &arr[i]);
+        fprintf(fp, "%d ", arr[i]);    
+    }
+    rewind(fp);
+    fscanf(fp,"%d %d %d %d %d",&arr[0],&arr[1],&arr[2],&arr[3],&arr[4]);
+       fclose(fp);
+
+    pid_t pid = fork();
+    // child process
+        if (pid==0){
+        for(int i=0; i<5; i++){
+            //int j = i;
+            //*arg =j;
+            rc = pthread_create(&threads[i], NULL, factorial, arr[i]);
+            if (rc) {
+                     printf("Error:unable to create thread\n");
+                     exit(-1);
+                  }
+        }
+        //free(arg); arg = NULL;
+        for( int i=0; i<5; i++){
+            rc = pthread_join(threads[i], NULL);
+            if (rc) {
+                     printf("Error:unable to create join\n");
+                     exit(-1);
+                  }    
+        }
+        fp = fopen("sum.txt", "w+");
+        fprintf(fp, "%d ", total_sum);    
+        fclose(fp);
+    }
+    //parent process
+    else{
+        pid = wait(&res);
+        fp = fopen("sum.txt", "r");
+        fgets(buff, 255, (FILE*)fp);
+           printf("sum.txt: %s\n", buff );
+           fclose(fp);
+    }
+}
