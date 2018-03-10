@@ -20,3 +20,483 @@ A linked list is a linear collection of data elements, in which linear order is 
 5. Explain the structure of a linked-list as implemented in C, explain how would you implement the operations to add and remove values from the queue? 
 
 In C, a linked lists are sets of  dynamically allocated nodes, arranged in such a way that each node contains one value and one pointer. To add values, the added node would have to point to the node directly in front of it and the node behind is would need to point to the new node.  
+
+Question 1:
+
+#include <stddef.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdbool.h>
+#include <unistd.h>
+#include <signal.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+
+#include <string.h>
+
+struct proc{
+    char name[256];
+    int priority;
+    int pid;
+    int runtime;
+};
+struct queue{
+    struct proc process;
+    struct queue * next;
+};
+struct queue base;
+void push(struct proc process){
+    struct queue * A = (struct queue *)malloc(sizeof(struct queue));
+    (*A).process = process;
+    (*A).next=base.next;
+    base.next=A;
+    //printf("%s->%s\n",(*base.next).process.name,(*(*base.next).next).process.name);
+
+    //printf("|%s|\n",(*base.next).process.name);
+}
+void print(struct queue * thisOne){
+    if((*thisOne).next!=NULL){
+        print((*thisOne).next);
+    }
+    printf("%s\t%i\t%i\t%i\n",(*thisOne).process.name,(*thisOne).process.priority,(*thisOne).process.pid,(*thisOne).process.runtime);
+}
+int main(){
+    char name [256];
+    int priority;
+    int pid;
+    int runtime;
+    int size=10;
+    freopen("processes.txt","r",stdin);
+    for(int x=0;x<size;x++){
+        scanf("%s,",name);
+        scanf("%i,",&priority);
+        scanf("%i,",&pid);
+        scanf("%i",&runtime);
+        struct proc process;
+        strcpy(process.name,strtok(name,","));
+        process.priority=priority;
+        process.pid=pid;
+        process.runtime=runtime;
+        push(process);
+    }
+    //printf("\n");
+    
+    print(base.next);
+}
+
+Question 2:
+#include <stddef.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdbool.h>
+#include <unistd.h>
+#include <signal.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+
+#include <string.h>
+
+struct proc{
+    char name[256];
+    int priority;
+    int pid;
+    int runtime;
+};
+struct queue{
+    struct proc process;
+    struct queue * next;
+};
+struct queue base;
+void push(struct proc process){
+    struct queue * A = (struct queue *)malloc(sizeof(struct queue));
+    (*A).process = process;
+    (*A).next=base.next;
+    base.next=A;
+}
+void print(struct queue * thisOne){
+    if((*thisOne).next!=NULL){
+        print((*thisOne).next);
+    }
+    printf("%s\t%i\t%i\t%i\n",(*thisOne).process.name,(*thisOne).process.priority,(*thisOne).process.pid,(*thisOne).process.runtime);
+}
+struct proc pop(){
+    struct proc r;
+    r = base.process;
+    base.next=(*base.next).next;
+    base.process=(*base.next).process;
+    return r;
+}
+struct proc delete_name(char *name){
+    struct queue * A = (struct queue *)malloc(sizeof(struct queue));
+    struct proc r;
+    struct proc x;
+    x.pid=0;
+    *A =base;
+    while((*A).next!=NULL){
+        if (strcmp((*A).process.name,name)==0){
+            r=(*A).process;
+            (*A).next=(*((*A).next)).next;
+            (*A).process=(*((*A).next)).process;
+            printf("success\n");
+            return r;
+        }
+        A=(*A).next;
+    }
+    return x;
+}
+struct proc delete_pid(int pid){
+    struct queue * A = (struct queue *)malloc(sizeof(struct queue));
+    struct proc r;
+    struct proc x;
+    x.pid=0;
+    *A =base;
+    while((*A).next!=NULL){
+        if ((*A).process.pid==pid){
+            r=(*A).process;
+            (*A).next=(*((*A).next)).next;
+            (*A).process=(*((*A).next)).process;
+            printf("success\n");
+            return r;
+        }
+        A=(*A).next;
+    }
+    return x;
+}
+int main(){
+    char name [256];
+    int priority;
+    int pid;
+    int runtime;
+    int size=10;
+    freopen("processes.txt","r",stdin);
+    for(int x=0;x<size;x++){
+        scanf("%s,",name);
+        scanf("%i,",&priority);
+        scanf("%i,",&pid);
+        scanf("%i",&runtime);
+        struct proc process;
+        strcpy(process.name,strtok(name,","));
+        process.priority=priority;
+        process.pid=pid;
+        process.runtime=runtime;
+        push(process);
+    }
+    printf("done pushing\n");
+    
+    delete_name("emacs");
+    delete_pid(12235);
+    struct proc n;
+    n=pop();
+    while(n.name!=NULL){
+        printf("%s\t%i\t%i\t%i\n",n.name,n.priority,n.pid,n.runtime);
+        n=pop();
+    }
+} 
+
+Question 3
+#include <stddef.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdbool.h>
+#include <unistd.h>
+#include <signal.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+int main(void)
+{
+      int status;
+      pid_t pid;
+    pid = fork();
+    // child process because return value zero
+    if (pid==0){
+        //execl("/Documents/ostut7","/Documents/ostut7","/process",NULL);
+        execl("/home/dafungajunga/Documents/ostut7/process","process",NULL);
+              perror("execl() failure!\n\n");
+        //sleep(5);
+    }
+
+    // parent process because return value non-zero.
+    else{
+        sleep(5);
+        kill(0,SIGINT);
+        printf("Hello from Parent!\n");
+    }
+
+}
+Question 4
+#include <stddef.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdbool.h>
+#include <unistd.h>
+#include <signal.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+static pid_t child;
+int main(void)
+{
+    int status;
+      pid_t pid;
+    pid = fork();
+    // child process because return value zero
+        if (pid==0){
+        child=getpid();
+        execl("/home/dafungajunga/Documents/ostut7/process","process",NULL);
+        perror("execl() failure!\n\n");
+    }
+    else if (pid < 0){
+            /* The fork failed.  Report failure.  */
+            status = -1;
+    }
+    else{
+    
+        sleep(5);
+        kill(pid,SIGSTOP);
+        sleep(10);
+        kill(pid,SIGCONT);
+        sleep(5);
+        kill(pid,SIGINT);
+        if (waitpid (pid, &status, 0) != pid){
+                  status = -1;
+              return status;
+        }
+    }
+}
+
+Question 5:
+#include <stddef.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdbool.h>
+#include <unistd.h>
+#include <signal.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+
+#include <string.h>
+
+struct proc{
+    char name[256];
+    int priority;
+    int pid;
+    int runtime;
+};
+struct queue{
+    struct proc process;
+    struct queue * next;
+};
+struct queue base;
+void push(struct proc process){
+    struct queue * A = (struct queue *)malloc(sizeof(struct queue));
+    (*A).process = process;
+    (*A).next=base.next;
+    base.next=A;
+}
+void print(struct queue * thisOne){
+    if((*thisOne).next!=NULL){
+        print((*thisOne).next);
+    }
+    printf("%s\t%i\t%i\t%i\n",(*thisOne).process.name,(*thisOne).process.priority,(*thisOne).process.pid,(*thisOne).process.runtime);
+}
+struct proc pop(){
+    struct proc r;
+    r = base.process;
+    base.next=(*base.next).next;
+    base.process=(*base.next).process;
+    return r;
+}
+struct proc delete_name(char *name){
+    struct queue * removedQueue = (struct queue *)malloc(sizeof(struct queue));
+    struct queue * prev = (struct queue *)malloc(sizeof(struct queue));
+    struct proc removedProcess;
+    struct proc x;
+    x.pid=0;
+    *removedQueue =base;
+    *prev =base;
+    for(int x=0;x<sizeof(*removedQueue);x++){
+        if (strcmp((*removedQueue).process.name,name)==0){
+            removedProcess=(*removedQueue).process;
+            (*removedQueue).next=(*prev).next;
+            (*removedQueue).process=(*prev).process;
+            printf("success\n");
+            return removedProcess;
+        }
+        prev=(removedQueue);
+        removedQueue=(*removedQueue).next;
+    }
+                printf("fail\n");
+    return x;
+}
+struct proc delete_pid(int pid){
+    struct queue * A = (struct queue *)malloc(sizeof(struct queue));
+    struct proc r;
+    struct proc x;
+    x.pid=0;
+    *A =base;
+    while((*A).next!=NULL){
+        if ((*A).process.pid==pid){
+            r=(*A).process;
+            (*A).next=(*((*A).next)).next;
+            (*A).process=(*((*A).next)).process;
+            printf("success\n");
+            return r;
+        }
+        A=(*A).next;
+    }
+    return x;
+}
+
+int main(){
+    char aList[10][256],bList[10][256],cList[10][256],dList[10][256];
+    for (int x = 0; x < 10; x++)
+        strcpy(aList[x], "");
+    for (int x = 0; x < 10; x++)
+        strcpy(bList[x], "");
+    for (int x = 0; x < 10; x++)
+        strcpy(cList[x], "");
+    for (int x = 0; x < 10; x++)
+        strcpy(dList[x], "");
+    int aCount=0,bCount=0,cCount=0,dCount=0;
+    char name [256];
+    int priority;
+    int runtime;
+    int size=10;
+    freopen("processes_q5.txt","r",stdin);
+    for(int x=0;x<size;x++){
+        scanf("%s,",name);
+        scanf("%i,",&priority);
+        scanf("%i",&runtime);
+        struct proc process;
+        strcpy(process.name,strtok(name,","));
+        process.priority=priority;
+        process.pid=0;
+        process.runtime=runtime;
+        push(process);
+        if (priority==0){
+            strcpy(aList[aCount],process.name);
+            aCount++;
+        }
+        if (priority==1){
+            strcpy(bList[bCount],process.name);
+            bCount++;
+        }
+        if (priority==2){
+            strcpy(cList[cCount],process.name);
+            cCount++;
+        }
+        if (priority==3){
+            strcpy(dList[dCount],process.name);
+            dCount++;
+        }
+    }
+    printf("done pushing\n");
+    
+    for(int x=0;x<aCount;x++){
+        printf("%s\n",(char *)aList[x]);
+        struct proc process=delete_name(aList[x]);
+        int status;
+        int run = process.runtime;    
+          pid_t pid;
+        pid = fork();
+        if (pid==0){
+            printf("Hello from child!\n");
+            execl("/home/dafungajunga/Documents/ostut7/process","process",NULL);
+            perror("execl() failure!\n\n");
+        }
+        else{
+
+            sleep(run);
+            process.pid=pid;
+            printf("Hello from Parent! %d\n",pid);
+            kill(pid,SIGINT);
+            waitpid (pid, &status, 0);
+            printf("%s\t%i\t%i\t%i\n",process.name,process.priority,process.pid,process.runtime);
+        }
+    }
+    for(int x=0;x<bCount;x++){
+        printf("%s\n",(char *)bList[x]);
+        struct proc process=delete_name(bList[x]);
+        int status;
+        int run = process.runtime;    
+          pid_t pid;
+        pid = fork();
+        if (pid==0){
+            printf("Hello from child!\n");
+            execl("/home/dafungajunga/Documents/ostut7/process","process",NULL);
+            perror("execl() failure!\n\n");
+        }
+        else{
+            sleep(run);
+            process.pid=pid;
+            printf("Hello from Parent! %d\n",pid);
+            kill(pid,SIGINT);
+            waitpid (pid, &status, 0);
+            printf("%s\t%i\t%i\t%i\n",process.name,process.priority,process.pid,process.runtime);
+        }
+    }
+    for(int x=0;x<cCount;x++){
+        printf("%s\n",(char *)cList[x]);
+        struct proc process=delete_name(cList[x]);
+        int status;
+        int run = process.runtime;    
+          pid_t pid;
+        pid = fork();
+        if (pid==0){
+            printf("Hello from child!\n");
+            execl("/home/dafungajunga/Documents/ostut7/process","process",NULL);
+            perror("execl() failure!\n\n");
+        }
+        else{
+            sleep(run);
+            process.pid=pid;
+            printf("Hello from Parent! %d\n",pid);
+            kill(pid,SIGINT);
+            waitpid (pid, &status, 0);
+            printf("%s\t%i\t%i\t%i\n",process.name,process.priority,process.pid,process.runtime);
+        }
+    }
+    for(int x=0;x<dCount;x++){
+        printf("%s\n",(char *)dList[x]);
+        struct proc process=delete_name(dList[x]);
+        int status;
+        int run = process.runtime;    
+          pid_t pid;
+        pid = fork();
+        if (pid==0){
+            printf("Hello from child!\n");
+            execl("/home/dafungajunga/Documents/ostut7/process","process",NULL);
+            perror("execl() failure!\n\n");
+        }
+        else{
+            sleep(run);
+            process.pid=pid;
+            printf("Hello from Parent! %d\n",pid);
+            kill(pid,SIGINT);
+            waitpid (pid, &status, 0);
+            printf("%s\t%i\t%i\t%i\n",process.name,process.priority,process.pid,process.runtime);
+        }
+    }
+    struct proc n;
+    n=pop();
+    while(n.name!=NULL){
+        int status;
+        int run = n.runtime;    
+          pid_t pid;
+        pid = fork();
+        if (pid==0){
+            printf("Hello from child!\n");
+            execl("/home/dafungajunga/Documents/ostut7/process","process",NULL);
+            perror("execl() failure!\n\n");
+        }
+        else{
+            sleep(run);
+            n.pid=pid;
+            printf("Hello from Parent! %d\n",pid);
+            kill(pid,SIGINT);
+            waitpid (pid, &status, 0);
+            printf("%s\t%i\t%i\t%i\n",n.name,n.priority,n.pid,n.runtime);
+            n=pop();
+        }
+    }
+}
+
