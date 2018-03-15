@@ -1,0 +1,177 @@
+Student Names:
+Joseph Robertson, Shomari Simpson
+Conceptual Questions
+1.What is an Abstract Data Type (ADT)?
+An abstract data type is a mathematical model for a certain class of data structures that have similar behavior.
+2.Explain the difference between a queue (FIFO) and a stack (LIFO).
+In a queue, the oldest items are served first and in a stack, the newest items are served first.
+3.Name and briefly explain three types of data structures.
+Array: a collection of elements, each identified by at least one array index
+Linked List: a linear collection of elements in which order is preserved with pointers that are associated with the element next in the sequence.
+Class: objects that contain initial starting states and implementations of behaviors that can be instantiated individually.
+4.Explain what a binary tree is, what are some common operations of a binary tree?
+A binary tree is a data structure in which each node has at most two children.
+Operations:create new node, remove node, search
+5.Explain what a hash table (dictionary) is, what are common operations of a hash table?
+A hash table is a data structure which implements a structure that can map keys to values.
+Operation:insertion deletion, lookup
+#include <stddef.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdbool.h>
+#include <unistd.h>
+#include <signal.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+
+#include <string.h>
+
+struct proc{
+    char parent[256];
+    char name[256];
+    int priority;
+    int memory;
+};
+
+struct proc_tree{
+    struct proc self;
+    struct proc_tree * right;
+    struct proc_tree * left;
+};
+struct proc_tree base;
+struct proc_tree head;
+struct proc_tree insert(struct proc process, struct proc_tree baseReference)
+{
+    //struct proc_tree * A = (struct proc_tree *)malloc(sizeof(struct proc_tree));
+    //*A=baseReference;
+    printf("refparent:%s\n",baseReference.self.parent);
+    printf("refname:%s\n",baseReference.self.name);
+    printf("processparent:%s\n",process.parent);
+    printf("processname:%s\n",process.name);
+    if (strcmp(process.parent,"NULL")==0){
+        baseReference.self=process;
+        baseReference.left = (struct proc_tree *)malloc(sizeof(struct proc_tree));
+        baseReference.right = (struct proc_tree *)malloc(sizeof(struct proc_tree));
+        strcpy((*baseReference.left).self.name,"NULL");
+        strcpy((*baseReference.right).self.name,"NULL");
+        printf("insert self\n");
+        base=baseReference;
+        head=baseReference;
+        //return base;
+        return baseReference;
+    }
+    if(strcmp (process.parent,baseReference.self.name)==0){
+        if((strcmp ((*baseReference.left).self.name,"NULL"))==0){
+            (*baseReference.left).left = (struct proc_tree *)malloc(sizeof(struct proc_tree));
+            (*baseReference.left).right = (struct proc_tree *)malloc(sizeof(struct proc_tree));
+            strcpy((*(*baseReference.left).left).self.name,"NULL");
+            strcpy((*(*baseReference.left).right).self.name,"NULL");
+            strcpy((*(*baseReference.left).left).self.name,process.parent);
+            strcpy((*(*baseReference.left).right).self.name,process.parent);
+
+            (*baseReference.left).self=process;
+            (*baseReference.left).left=NULL;
+            (*baseReference.left).right=NULL;
+            //base=*A;
+            //base=baseReference;
+            printf("insert left\n");
+            return baseReference;
+            //return;
+        }
+        //if (baseReference.right==NULL){
+        if((strcmp ((*baseReference.right).self.name,"NULL"))==0){
+            (*baseReference.right).left = (struct proc_tree *)malloc(sizeof(struct proc_tree));
+            (*baseReference.right).right = (struct proc_tree *)malloc(sizeof(struct proc_tree));
+            strcpy((*(*baseReference.right).left).self.name,"NULL");
+            strcpy((*(*baseReference.right).right).self.name,"NULL");
+            strcpy((*(*baseReference.right).left).self.name,process.parent);
+            strcpy((*(*baseReference.right).right).self.name,process.parent);
+            
+            (*baseReference.right).self=process;
+            (*baseReference.right).left=NULL;
+            (*baseReference.right).right=NULL;
+            //base=*A;
+            //base=baseReference;
+            printf("insert right\n");
+            return baseReference;
+            //return;
+        }
+        else{
+            printf("insert fail after parent-self match\n");
+            return baseReference;
+            //return;
+        }
+    }
+    if((strcmp ((*baseReference.left).self.name,"NULL"))!=0){
+        printf("checking left\n");
+        (*baseReference.left).left = (struct proc_tree *)malloc(sizeof(struct proc_tree));
+            (*baseReference.left).right = (struct proc_tree *)malloc(sizeof(struct proc_tree));
+            strcpy((*(*baseReference.left).left).self.name,"NULL");
+            strcpy((*(*baseReference.left).right).self.name,"NULL");
+            strcpy((*(*baseReference.left).left).self.name,"NULL");
+            strcpy((*(*baseReference.left).right).self.name,"NULL");
+        //(*baseReference.left)=insert(process,(*baseReference.left));
+        insert(process,(*baseReference.left));
+        //return;
+        //return baseReference;
+    }
+    if((strcmp ((*baseReference.right).self.name,"NULL"))!=0){
+        printf("checking right\n");
+        (*baseReference.right).left = (struct proc_tree *)malloc(sizeof(struct proc_tree));
+            (*baseReference.right).right = (struct proc_tree *)malloc(sizeof(struct proc_tree));
+            strcpy((*(*baseReference.right).left).self.name,"NULL");
+            strcpy((*(*baseReference.right).right).self.name,"NULL");
+            strcpy((*(*baseReference.right).left).self.name,"NULL");
+            strcpy((*(*baseReference.right).right).self.name,"NULL");
+        //(*baseReference.right)=insert(process,(*baseReference.right));
+        insert(process,(*baseReference.right));
+        //return;
+        //return baseReference;
+    }
+    //printf("insert fail\n");
+    //return baseReference;    
+}
+
+int print(struct proc_tree baseReference){
+    printf("parent%s\n",baseReference.self.parent);
+    printf("child%s\n",baseReference.self.name);
+    printf("\n");
+
+    if((baseReference).left!=NULL){
+        if((baseReference).right!=NULL){
+            return print(*baseReference.left) +print(*baseReference.right);
+        }
+        return print(*baseReference.left);
+    }
+    if((baseReference).right!=NULL){
+            return print(*baseReference.right);    
+    }
+    printf("--end of branch--\n");
+    return 0;
+}
+int main(){
+    char name [256];
+    char parent [256];
+    int priority;
+    int memory;
+    strcpy((base).self.parent,"NULL");
+    int size=7;
+    freopen("processes_tree.txt","r",stdin);
+    for(int x=0;x<size;x++){
+        scanf("%s,",parent);
+        scanf("%s,",name);
+        scanf("%i,",&priority);
+        scanf("%i,",&memory);
+        //printf("%s",parent);
+        struct proc process;
+        strcpy(process.parent,strtok(parent,","));
+        strcpy(process.name,strtok(name,","));
+        process.priority=priority;
+        process.memory=memory;
+        insert(process,head);
+        printf("\n");
+    }
+    
+    print(base);
+}
+
