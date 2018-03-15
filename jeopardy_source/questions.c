@@ -37,7 +37,7 @@ void display_categories(void)
     printf("\n");
     for(int x=0;x<5;x++){
         for(int y=0;y<NUM_CATEGORIES;y++){
-            if(findQ(categories[y],200*(x+1)).answered==0)
+            if(already_answered(categories[y],200*(x+1))==0)
                 printf("%i",200*(x+1));
             for(int z=0;z<(strlen(categories[y])/4);z++)
                 printf("\t");
@@ -48,7 +48,7 @@ void display_categories(void)
 }
 
 // Displays the question for the category and dollar value
-void display_question(char *category, int value)
+extern bool display_question(char *category, int value)
 {
 	for(int i=0;i<NUM_CATEGORIES;i++){
 		for(int j=0;j<(NUM_CATEGORIES/NUM_QUESTIONS);j++){
@@ -63,6 +63,7 @@ void display_question(char *category, int value)
 			}
 		}
 	}
+	return true;
 
 }
 
@@ -90,9 +91,6 @@ bool valid_answer(char *category, int value, char *answer)
 // Returns true if the question has already been answered
 bool already_answered(char *category, int value)
 {
-<<<<<<< HEAD
-    
-=======
 	for(int i=0;i<NUM_CATEGORIES;i++){
 		for(int j=0;j<(NUM_CATEGORIES/NUM_QUESTIONS);j++){
 			int num = (i*NUM_CATEGORIES/NUM_QUESTIONS)+j; 
@@ -109,13 +107,13 @@ bool already_answered(char *category, int value)
 		}
 	}
     // lookup the question and see if it's already been marked as answered
->>>>>>> 9fb602621addb17b3e6d56fdc8eb9d94c883c650
     return false;
 }
 
-struct question* findQ(char *category, int value){
+/*struct question * findQ(char *category, int value){
     for (int x=0;x<NUM_QUESTIONS;x++){
         if (strcmp(questions[x].category,category)==0 && questions[x].value==value)
             return &questions[x];
     }
 }
+*/
