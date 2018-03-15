@@ -174,4 +174,269 @@ int main(){
     
     print(base);
 }
+QUESTION 2:
+
+#include <stddef.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdbool.h>
+#include <unistd.h>
+#include <signal.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <string.h>
+#define MEMORY 1024
+
+struct proc{
+	char name[256];
+	int priority;
+	int pid;
+	int address;
+    int memory;
+	int runtime;
+	int suspended;
+};
+struct priority{
+    struct proc process;
+    struct priority * next;
+};
+struct secondary{
+    struct proc process;
+    struct secondary * next;
+};
+struct priority p;
+struct secondary s;
+void Ppush(struct proc process){
+    struct priority * A = (struct priority *)malloc(sizeof(struct priority));
+    (*A).process = process;
+    (*A).next=p.next;
+    p.next=A;
+}
+void Spush(struct proc process){
+    struct secondary * A = (struct secondary *)malloc(sizeof(struct secondary));
+    (*A).process = process;
+    (*A).next=s.next;
+    s.next=A;
+}
+struct proc Ppop(){
+	struct proc r;
+	r = p.process;
+	p.next=(*p.next).next;
+	p.process=(*p.next).process;
+	return r;
+}
+struct proc Spop(){
+	struct proc r;
+	r = s.process;
+	s.next=(*s.next).next;
+	s.process=(*s.next).process;
+	return r;
+}
+/*void print(struct queue * thisOne){
+    if((*thisOne).next!=NULL){
+        print((*thisOne).next);
+    }
+    printf("%s\t%i\t%i\t%i\n",(*thisOne).process.name,(*thisOne).process.priority,(*thisOne).process.pid,(*thisOne).process.runtime);
+}*/
+
+/*struct proc delete_name(char *name){
+	struct queue * removedQueue = (struct queue *)malloc(sizeof(struct queue));
+	struct queue * prev = (struct queue *)malloc(sizeof(struct queue));
+	struct proc removedProcess;
+	struct proc x;
+	x.pid=0;
+	*removedQueue =base;
+	*prev =base;
+	for(int x=0;x<sizeof(*removedQueue);x++){
+		if (strcmp((*removedQueue).process.name,name)==0){
+			removedProcess=(*removedQueue).process;
+			(*removedQueue).next=(*prev).next;
+			(*removedQueue).process=(*prev).process;
+			printf("success\n");
+			return removedProcess;
+		}
+		prev=(removedQueue);
+		removedQueue=(*removedQueue).next;
+	}
+				printf("fail\n");
+	return x;
+}*/
+/*struct proc delete_pid(int pid){
+	struct queue * A = (struct queue *)malloc(sizeof(struct queue));
+	struct proc r;
+	struct proc x;
+	x.pid=0;
+	*A =base;
+	while((*A).next!=NULL){
+		if ((*A).process.pid==pid){
+			r=(*A).process;
+			(*A).next=(*((*A).next)).next;
+			(*A).process=(*((*A).next)).process;
+			printf("success\n");
+			return r;
+		}
+		A=(*A).next;
+	}
+	return x;
+}*/
+int markMemInd(int avail_mem[MEMORY],int memory){
+	int count;
+	for (int x = 0; x < MEMORY; x++){
+		if (avail_mem[x]==0){
+			avail_mem[x]=1;
+			count++;
+		}
+		if (count==memory){
+			return x;
+		}
+	}
+}
+int checkMemInd(int avail_mem[MEMORY],int memory){
+	int count;
+	for (int x = 0; x < MEMORY; x++){
+		if (avail_mem[x]==0){
+			//avail_mem[x]=1;
+			count++;
+		}
+		if (count==memory){
+			return 1;
+		}
+	}
+	return 0;
+}
+void freeMemInd(int memory,int avail_mem[MEMORY]){
+			int count;
+	for (int x = 0; x < MEMORY; x++){
+		if (avail_mem[x]==1){
+			avail_mem[x]=0;
+			count++;
+		}
+		if (count==memory){
+			return;
+		}
+	}
+}
+int main(){
+	int avail_mem[MEMORY]={0};
+		
+	char aList[10][256],bList[10][256];
+	for (int x = 0; x < 10; x++)
+    	strcpy(aList[x], "");
+	for (int x = 0; x < 10; x++)
+    	strcpy(bList[x], "");
+
+	int aCount=0,bCount=0;
+    char name [256];
+    int priority;
+	int memory;
+    int runtime;
+    int size=10;
+    freopen("processes_q5.txt","r",stdin);
+    for(int x=0;x<size;x++){
+        scanf("%s,",name);
+        scanf("%i,",&priority);
+		scanf("%i,",&memory);
+        scanf("%i",&runtime);
+        struct proc process;
+        strcpy(process.name,strtok(name,","));
+        process.priority=priority;
+        process.memory=memory;
+        process.runtime=runtime;
+
+		if (priority==0){
+			Ppush(process);
+			//strcpy(aList[aCount],process.name);
+			aCount++;
+		}
+		else{
+			Spush(process);
+			//strcpy(bList[bCount],process.name);
+			bCount++;
+		}
+	
+    }
+    printf("done pushing\n");
+	struct proc n;
+	n=Ppop();
+	int f= markMemInd(avail_mem,n.memory);
+	while(n.name!=NULL){
+		int status;
+		int run = n.runtime;	
+		n.address= f;
+		printf("%s\t%i\t%i\t%i\n",n.name,n.priority,n.pid,n.runtime);
+  		pid_t pid;
+		pid = fork();
+    	if (pid==0){
+			printf("Hello from child!\n"); 
+			execl("/home/dafungajunga/Documents/ostut8/process","process",NULL);
+		    perror("execl() failure!\n\n");
+		}
+    	else{ 
+			sleep(run);
+			n.pid=pid;
+			printf("Hello from Parent! %d\n",pid); 
+			kill(pid,SIGINT);
+			waitpid (pid, &status, 0);
+			//printf("%s\t%i\t%i\t%i\n",n.name,n.priority,n.pid,n.runtime);
+			freeMemInd(n.memory,avail_mem);
+			n=Ppop();
+			markMemInd(avail_mem,n.memory);
+		}
+	}
+
+	n=Spop();
+	n.pid=0;
+	while(checkMemInd(avail_mem,n.memory)==0);
+	f= markMemInd(avail_mem,n.memory);
+	while(n.name!=NULL){
+		int status;
+		int run = n.runtime;	
+		n.address=f;
+		printf("%s\t%i\t%i\t%i\n",n.name,n.priority,n.pid,n.runtime);
+  		pid_t pid;
+		pid = fork();
+    	if (pid==0){
+			printf("Hello from child!\n"); 
+			execl("/home/dafungajunga/Documents/ostut8/process","process",NULL);
+		    perror("execl() failure!\n\n");
+		}
+    	else{
+			n.pid=pid;
+			if (n.suspended==1 && n.pid!=0 && n.runtime!=0){
+				n.suspended==0;
+				while(checkMemInd(avail_mem,n.memory)==0);
+				markMemInd(avail_mem,n.memory);
+				n.pid=pid;
+				printf("Hello from Parent! %d\n",pid); 
+				kill(pid,SIGCONT);
+				sleep(1);
+				n.pid=pid;
+				n.runtime-=1;
+				kill(pid,SIGSTOP);
+				waitpid (pid, &status, 0);
+				freeMemInd(n.memory,avail_mem);
+				n.suspended==1;
+				Spush(n);
+				//n=Spop();
+				//n.pid=0;
+				
+			}
+
+			if (run==1){
+			sleep(run);
+			n.pid=pid;
+			printf("Hello from Parent! %d\n",pid); 
+			kill(pid,SIGINT);
+			waitpid (pid, &status, 0);
+			//printf("%s\t%i\t%i\t%i\n",n.name,n.priority,n.pid,n.runtime);
+			freeMemInd(n.memory,avail_mem);
+			}
+			n=Spop();
+			markMemInd(avail_mem,n.memory);
+			while(checkMemInd(avail_mem,n.memory)==0);
+			f= markMemInd(avail_mem,n.memory);
+		}
+	}
+}
+
 
