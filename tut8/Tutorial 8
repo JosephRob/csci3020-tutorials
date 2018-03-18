@@ -174,7 +174,6 @@ int main(){
     
     print(base);
 }
-QUESTION 2:
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -186,15 +185,15 @@ QUESTION 2:
 #include <sys/wait.h>
 #include <string.h>
 #define MEMORY 1024
-
+#include <semaphore.h>
 struct proc{
-	char name[256];
-	int priority;
-	int pid;
-	int address;
+    char name[256];
+    int priority;
+    int pid;
+    int address;
     int memory;
-	int runtime;
-	int suspended;
+    int runtime;
+    int suspended;
 };
 struct priority{
     struct proc process;
@@ -204,239 +203,452 @@ struct secondary{
     struct proc process;
     struct secondary * next;
 };
-struct priority p;
-struct secondary s;
-void Ppush(struct proc process){
-    struct priority * A = (struct priority *)malloc(sizeof(struct priority));
-    (*A).process = process;
-    (*A).next=p.next;
-    p.next=A;
+int termination=0;
+//sem_t mutex;
+struct proc zeroRuntimeProcess;
+int avail_mem[MEMORY]={ [ 0 ... 1023 ] = 0 };
+struct priority *proot;
+    struct secondary *sroot;
+    struct secondary *sconductor;
+    struct priority *pconductor;
+int PremoveP(int ppriority,int pmemory);
+//int SremoveP(struct priority *proot,struct priority *pconductor,struct secondary thisOne,int ppriority,int pmemory);
+struct priority * Ppush(struct proc process){
+    pconductor = proot;
+    if ( pconductor != 0 ) { /* Makes sure there is a place to start */
+        while ( pconductor->next != 0 ) {
+            printf( "%s\n", pconductor->process.name );
+            pconductor = pconductor->next;
+            }
+        printf( "%s\n", pconductor->process.name );
+    }
+    pconductor->next = malloc( sizeof(struct priority) );  
+
+    pconductor = pconductor->next;
+
+    if ( pconductor == 0 )
+    {
+        printf( "Out of memory" );
+        return proot,pconductor;
+    }
+    /* initialize the new memory */
+    pconductor->next = 0;         
+    pconductor->process = process;
+
+    return proot,pconductor;
 }
-void Spush(struct proc process){
-    struct secondary * A = (struct secondary *)malloc(sizeof(struct secondary));
-    (*A).process = process;
-    (*A).next=s.next;
-    s.next=A;
+struct secondary * Spush(struct proc process){
+    sconductor = sroot;
+    if ( sconductor != 0 ) { /* Makes sure there is a place to start */
+        while ( sconductor->next != 0 ) {
+            //printf( "%s\n", sconductor->process.name );
+            sconductor = sconductor->next;
+            }
+        //printf( "%s\n", sconductor->process.name );
+    }
+    
+    sconductor->next = malloc( sizeof(struct secondary) );  
+
+    sconductor = sconductor->next;
+
+    if ( sconductor == 0 )
+    {
+        printf( "Out of memory" );
+        return sroot,sconductor;
+    }
+    /* initialize the new memory */
+    sconductor->next = 0;         
+    sconductor->process = process;
+
+    return sroot,sconductor;
 }
 struct proc Ppop(){
-	struct proc r;
-	r = p.process;
-	p.next=(*p.next).next;
-	p.process=(*p.next).process;
-	return r;
+        struct proc r=proot->process;
+        if(proot->next==0){
+                Ppush(zeroRuntimeProcess);
+                printf("returned\n");
+                proot=proot->next;
+                return r;
+        }
+        if (r.runtime==0){
+            printf("runtime was zero\n");
+            proot=proot->next;
+            r=proot->process;
+        }
+        proot=proot->next;
+        return r;
 }
 struct proc Spop(){
-	struct proc r;
-	r = s.process;
-	s.next=(*s.next).next;
-	s.process=(*s.next).process;
-	return r;
+        sconductor = sroot;
+        struct proc r=sroot->process;
+        /*if(sroot->next==0){
+                //Spush(zeroRuntimeProcess);
+                //printf("returned\n");
+                //sroot=sroot->next;
+                return r;
+        }*/
+        if (r.runtime==0){
+            printf("runtime was zero\n");
+            sroot=sroot->next;
+            r=sroot->process;
+        }
+        sroot=sroot->next;
+        return r;
 }
-/*void print(struct queue * thisOne){
-    if((*thisOne).next!=NULL){
-        print((*thisOne).next);
+void Pprint(){
+    pconductor = proot;
+    if ( pconductor != 0 ) { /* Makes sure there is a place to start */
+        while ( pconductor->next != 0 ) {
+            printf( "%s\n", pconductor->process.name );
+            pconductor = pconductor->next;
+            }
+        printf( "%s\n", pconductor->process.name );
     }
-    printf("%s\t%i\t%i\t%i\n",(*thisOne).process.name,(*thisOne).process.priority,(*thisOne).process.pid,(*thisOne).process.runtime);
-}*/
+}
+void Sprint(){
+    sconductor = sroot;
+    if ( sconductor != 0 ) { /* Makes sure there is a place to start */
+        while ( sconductor->next != 0 ) {
+            printf( "%s\n", sconductor->process.name );
+            sconductor = sconductor->next;
+            }
+        printf( "%s\n", sconductor->process.name );
+    }
+}
+void makeT(){
+    sconductor = sroot;
+    if ( sconductor != 0 ) { /* Makes sure there is a place to start */
+        while ( sconductor->next != 0 ) {
+            termination+=1;
+            sconductor = sconductor->next;
+            }
+        //termination+=1;
+    }
+}
+int PremoveP(int ppriority,int pmemory){
+    int address=8080;
+    pconductor = proot;
+    while (1){
+        if (ppriority<=pconductor->process.priority &&pconductor->process.address!=8080 &&pconductor->process.memory >=pmemory){
+            address=pconductor->process.address;
+            pconductor->process.address=8080;
+            printf("found address\n");
+            return address;
+        }
+        if(pconductor->next != 0){
+            pconductor = pconductor->next;
+            continue;
+        }
+        else{
+            printf("could not find address\n");
+            return address;
+        }
+    }
+}
+int PcheckMemInd(int avail_mem[MEMORY],int memory,int priority){
+    int count;
+    int index=0;
+    for (int x = 0; x < MEMORY; x++){
+        if (avail_mem[x]==0){
+            //printf("found");
+            avail_mem[x]=1;
+            count++;
+        }
+        else{
+            for (int y = index; y < (index+count); y++){
+                avail_mem[y]=0;
+            }
+            //printf("reset");
+            count=0;
+            index=x+1;
+        }
+        if (count==memory){
+            //printf("found space");
+            return index;
+        }
+    }
+    index=PremoveP(priority,memory);
+    //printf("current index: %i\n",index);
+    return index;
+}
+int SremoveP(int ppriority,int pmemory){
+    int address=8080;
+    sconductor = sroot;
+    while (1){
+        if (ppriority<=sconductor->process.priority &&sconductor->process.address!=8080 &&sconductor->process.memory >=pmemory){
+            address=sconductor->process.address;
+            sconductor->process.address=8080;
+            printf("found address\n");
+            return address;
+        }
+        if(sconductor->next != 0){
+            sconductor = sconductor->next;
+            //printf("sremovelooping");
+            continue;
+        }
+        else{
+            //printf("could not find address\n");
+            return address;
+        }
+    }
 
-/*struct proc delete_name(char *name){
-	struct queue * removedQueue = (struct queue *)malloc(sizeof(struct queue));
-	struct queue * prev = (struct queue *)malloc(sizeof(struct queue));
-	struct proc removedProcess;
-	struct proc x;
-	x.pid=0;
-	*removedQueue =base;
-	*prev =base;
-	for(int x=0;x<sizeof(*removedQueue);x++){
-		if (strcmp((*removedQueue).process.name,name)==0){
-			removedProcess=(*removedQueue).process;
-			(*removedQueue).next=(*prev).next;
-			(*removedQueue).process=(*prev).process;
-			printf("success\n");
-			return removedProcess;
-		}
-		prev=(removedQueue);
-		removedQueue=(*removedQueue).next;
-	}
-				printf("fail\n");
-	return x;
-}*/
-/*struct proc delete_pid(int pid){
-	struct queue * A = (struct queue *)malloc(sizeof(struct queue));
-	struct proc r;
-	struct proc x;
-	x.pid=0;
-	*A =base;
-	while((*A).next!=NULL){
-		if ((*A).process.pid==pid){
-			r=(*A).process;
-			(*A).next=(*((*A).next)).next;
-			(*A).process=(*((*A).next)).process;
-			printf("success\n");
-			return r;
-		}
-		A=(*A).next;
-	}
-	return x;
-}*/
-int markMemInd(int avail_mem[MEMORY],int memory){
-	int count;
-	for (int x = 0; x < MEMORY; x++){
-		if (avail_mem[x]==0){
-			avail_mem[x]=1;
-			count++;
-		}
-		if (count==memory){
-			return x;
-		}
-	}
 }
-int checkMemInd(int avail_mem[MEMORY],int memory){
-	int count;
-	for (int x = 0; x < MEMORY; x++){
-		if (avail_mem[x]==0){
-			//avail_mem[x]=1;
-			count++;
-		}
-		if (count==memory){
-			return 1;
-		}
-	}
-	return 0;
+int ScheckMemInd(int avail_mem[MEMORY],int memory,int priority){
+    //sem_wait(&mutex);
+    int count;
+    int index=0;
+    for (int x = 0; x < MEMORY; x++){
+        if (avail_mem[x]==0){
+            //printf("found");
+            avail_mem[x]=1;
+            count++;
+        }
+        else{
+            for (int y = index; y < (index+count); y++){
+                avail_mem[y]=0;
+            }
+            //printf("reset");
+            count=0;
+            index=x+1;
+        }
+        if (count==memory){
+            //printf("found space");
+            //sem_post(&mutex);
+            return index;
+        }
+    }
+    index=SremoveP(priority,memory);
+    //printf("current index: %i\n",index);
+    //sem_post(&mutex);
+    return index;
 }
-void freeMemInd(int memory,int avail_mem[MEMORY]){
-			int count;
-	for (int x = 0; x < MEMORY; x++){
-		if (avail_mem[x]==1){
-			avail_mem[x]=0;
-			count++;
-		}
-		if (count==memory){
-			return;
-		}
-	}
+void freeMemInd(int address,int memory,int avail_mem[MEMORY]){
+    int count;
+    //sem_wait(&mutex);
+    for (int x = address; count < memory; x++){
+        avail_mem[x]=0;
+        count++;
+    }
+    //sem_post(&mutex);
 }
+
 int main(){
-	int avail_mem[MEMORY]={0};
-		
-	char aList[10][256],bList[10][256];
-	for (int x = 0; x < 10; x++)
-    	strcpy(aList[x], "");
-	for (int x = 0; x < 10; x++)
-    	strcpy(bList[x], "");
+    
+    proot = malloc( sizeof(struct priority) );
+    sroot = malloc( sizeof(struct secondary) );   
+    zeroRuntimeProcess.runtime=0;
+    zeroRuntimeProcess.address=8080;
+    zeroRuntimeProcess.pid=34404;
+    proot->process=zeroRuntimeProcess;
+    sroot->process=zeroRuntimeProcess;
 
-	int aCount=0,bCount=0;
+        proot->next = 0;   
+        proot->process = zeroRuntimeProcess;
+        pconductor = proot;
+        if ( pconductor != 0 ) {
+            while ( pconductor->next != 0)
+            {
+                pconductor = pconductor->next;
+            }
+        }
+        sroot->next = 0;   
+        sroot->process = zeroRuntimeProcess;
+        sconductor = sroot;
+        if ( sconductor != 0 ) {
+            while ( sconductor->next != 0)
+            {
+                sconductor = sconductor->next;
+            }
+        }
     char name [256];
     int priority;
-	int memory;
+    int memory;
     int runtime;
     int size=10;
     freopen("processes_q5.txt","r",stdin);
     for(int x=0;x<size;x++){
         scanf("%s,",name);
         scanf("%i,",&priority);
-		scanf("%i,",&memory);
+        scanf("%i,",&memory);
         scanf("%i",&runtime);
+        printf("%s\n",name);
         struct proc process;
         strcpy(process.name,strtok(name,","));
         process.priority=priority;
         process.memory=memory;
         process.runtime=runtime;
+        process.pid=0;
+        process.suspended=0;
 
-		if (priority==0){
-			Ppush(process);
-			//strcpy(aList[aCount],process.name);
-			aCount++;
-		}
-		else{
-			Spush(process);
-			//strcpy(bList[bCount],process.name);
-			bCount++;
-		}
-	
+        if (priority==0){
+            proot,pconductor=Ppush(process);
+        }
+        else{
+            sroot,sconductor=Spush(process);
+        }    
     }
     printf("done pushing\n");
-	struct proc n;
-	n=Ppop();
-	int f= markMemInd(avail_mem,n.memory);
-	while(n.name!=NULL){
-		int status;
-		int run = n.runtime;	
-		n.address= f;
-		printf("%s\t%i\t%i\t%i\n",n.name,n.priority,n.pid,n.runtime);
-  		pid_t pid;
-		pid = fork();
-    	if (pid==0){
-			printf("Hello from child!\n"); 
-			execl("/home/dafungajunga/Documents/ostut8/process","process",NULL);
-		    perror("execl() failure!\n\n");
-		}
-    	else{ 
-			sleep(run);
-			n.pid=pid;
-			printf("Hello from Parent! %d\n",pid); 
-			kill(pid,SIGINT);
-			waitpid (pid, &status, 0);
-			//printf("%s\t%i\t%i\t%i\n",n.name,n.priority,n.pid,n.runtime);
-			freeMemInd(n.memory,avail_mem);
-			n=Ppop();
-			markMemInd(avail_mem,n.memory);
-		}
-	}
+    Pprint();
+    Sprint();
 
-	n=Spop();
-	n.pid=0;
-	while(checkMemInd(avail_mem,n.memory)==0);
-	f= markMemInd(avail_mem,n.memory);
-	while(n.name!=NULL){
-		int status;
-		int run = n.runtime;	
-		n.address=f;
-		printf("%s\t%i\t%i\t%i\n",n.name,n.priority,n.pid,n.runtime);
-  		pid_t pid;
-		pid = fork();
-    	if (pid==0){
-			printf("Hello from child!\n"); 
-			execl("/home/dafungajunga/Documents/ostut8/process","process",NULL);
-		    perror("execl() failure!\n\n");
-		}
-    	else{
-			n.pid=pid;
-			if (n.suspended==1 && n.pid!=0 && n.runtime!=0){
-				n.suspended==0;
-				while(checkMemInd(avail_mem,n.memory)==0);
-				markMemInd(avail_mem,n.memory);
-				n.pid=pid;
-				printf("Hello from Parent! %d\n",pid); 
-				kill(pid,SIGCONT);
-				sleep(1);
-				n.pid=pid;
-				n.runtime-=1;
-				kill(pid,SIGSTOP);
-				waitpid (pid, &status, 0);
-				freeMemInd(n.memory,avail_mem);
-				n.suspended==1;
-				Spush(n);
-				//n=Spop();
-				//n.pid=0;
-				
-			}
+    struct proc n;
+    n=Ppop();
+    n.address= PcheckMemInd(avail_mem,n.memory,n.priority);
+    if (n.address==8080){
+        printf("no memory\n");
+        exit(0);
+    }
+Pprint(proot,pconductor);
+    printf("%d\n",n.runtime);
+    printf("%d\n",n.pid);
+    printf("%s\n",n.name);
+                    //Ppush(zeroRuntimeProcess);
+    while(n.runtime!=0){
+        int status;
+        printf("current:%s\t%i\t%i\t%i\n",n.name,n.priority,n.memory,n.runtime);
+          pid_t pid;
+        pid = fork();
+        if (pid==0){
+            //printf("Hello from child!\n");
+            execl("/home/dafungajunga/Documents/ostut8/process","process",NULL);
+            perror("execl() failure!\n\n");
+        }
+        else{
+            sleep(n.runtime);
+            n.pid=pid;
+            //printf("Hello from Parent! %d\n",pid);
+            kill(pid,SIGINT);
+            waitpid (pid, &status, 0);
+            freeMemInd(n.address,n.memory,avail_mem);
+            n=Ppop();
+            n.address= PcheckMemInd(avail_mem,n.memory,n.priority);
+            if (n.address==8080){
+                printf("no memory\n");
+                exit(0);
+            }
+        }
+    }
+    
 
-			if (run==1){
-			sleep(run);
-			n.pid=pid;
-			printf("Hello from Parent! %d\n",pid); 
-			kill(pid,SIGINT);
-			waitpid (pid, &status, 0);
-			//printf("%s\t%i\t%i\t%i\n",n.name,n.priority,n.pid,n.runtime);
-			freeMemInd(n.memory,avail_mem);
-			}
-			n=Spop();
-			markMemInd(avail_mem,n.memory);
-			while(checkMemInd(avail_mem,n.memory)==0);
-			f= markMemInd(avail_mem,n.memory);
-		}
-	}
+
+    struct proc m;
+    makeT();
+    while(termination>0){
+        int status;
+        printf("current:%s\t%i\t%i\t%i\n",m.name,m.priority,m.memory,m.runtime);
+        printf("current termination:%d\n",termination);        
+        Sprint();
+          pid_t pid;
+        m=Spop();
+        if (m.runtime<=0){
+            termination-=1;
+            continue;
+        }
+        printf("weird1\n");
+        while(m.pid==34404){
+            //printf("PIDlooping\n");
+            m=Spop();
+        }
+        printf("weird2\n");
+        m.address= ScheckMemInd(avail_mem,m.memory,m.priority);
+        /*if (m.address==34404){
+            printf("looping");
+            m.address= ScheckMemInd(avail_mem,m.memory,m.priority);
+
+            continue;
+        }*/
+        printf("weird3\n");
+        if (m.address==8080){
+            printf("no memory, pushing back");
+            Spush(m);
+            continue;
+        }
+        if(m.pid==0){
+            pid = fork();
+        }
+        if (pid==0){
+            execl("/home/dafungajunga/Documents/ostut8/process","process",NULL);
+                perror("execl() failure!\n\n");
+        }
+        else{
+                sconductor = sroot;
+                /*if(m.pid==0){
+                    m.pid=pid;
+                }*/
+                if (m.runtime==1){
+                    kill(m.pid,SIGCONT);
+                    waitpid (m.pid, &status, WCONTINUED);
+                    sleep(1);
+                    kill(m.pid,SIGINT);
+                    m.runtime-=1;
+                    waitpid (m.pid, &status, 0);
+                    freeMemInd(m.address,m.memory,avail_mem);
+                    termination-=1;
+                    printf("done\n");
+                    continue;
+                }
+                if(m.pid==0){
+                    m.pid=pid;
+                    sleep(1);
+                    kill(m.pid,SIGTSTP);
+                    waitpid (m.pid, &status, WUNTRACED);
+                    m.runtime-=1;
+                    m.suspended=1;
+                    printf("1suspended\n");
+                    if(m.runtime>0){
+                        printf("pushing");
+                        Spush(m);
+                        freeMemInd(m.address,m.memory,avail_mem);
+                        continue;
+                    }
+                    else{
+                        kill(m.pid,SIGINT);
+                        //m.runtime-=1;
+                        waitpid (m.pid, &status, 0);
+                        freeMemInd(m.address,m.memory,avail_mem);
+                        printf("done\n");
+                        termination-=1;
+                        continue;
+                    }
+                }
+                if (m.suspended==1 && m.runtime>0){
+
+                    m.suspended=0;
+                    kill(m.pid,SIGCONT);
+                    waitpid (m.pid, &status, WCONTINUED);
+                    sleep(1);
+                    m.runtime-=1;
+                    m.suspended=1;
+                    kill(m.pid,SIGTSTP);
+                    waitpid (m.pid, &status, WUNTRACED);
+                    printf("suspended\n");
+                    if(m.runtime>0){
+                        printf("pushing\n");
+                        Spush(m);
+                        freeMemInd(m.address,m.memory,avail_mem);
+                        continue;    
+                    }
+                    else{
+                        kill(m.pid,SIGCONT);
+                        waitpid (m.pid, &status, WCONTINUED);
+                        kill(m.pid,SIGINT);
+                        //m.runtime-=1;
+                        waitpid (m.pid, &status, 0);
+                        freeMemInd(m.address,m.memory,avail_mem);
+                        termination-=1;
+                        printf("done\n");
+                        continue;
+                    }    
+                }
+                
+            }        
+        }
+
+
+
 }
+
+
+
 
 
