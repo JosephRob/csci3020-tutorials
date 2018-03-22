@@ -1,0 +1,15 @@
+Student Names:
+Joseph Robertson, Shomari Simpson
+Conceptual Questions
+Explain what OpenMP is, what are it’s benefits? 
+OpenMP is an Application Program Interface that may be used to explicitly direct multithreaded shared memory parallelism. OpenMP provides a standard among a variety of shared memory architecture, simplifies implementation of parallelism and lets users  incrementally parallelize a serial program
+What are the #pragma definitions, what do they do? 
+#pragma definitions are compiler directives capable of spawning a parallel region, dividing blocks of code among threads, distributing loop iterations between threads, serializing sections of code or synchronizing work among threads
+Write the OpenMP #pragma definition to execute a loop in parallel. 
+#pragma omp parallel
+#pragma omp for
+What does the reduction do in the #pragma definition in OpenMP? 
+The reduction clause performs a reduction operation on the variable that appear in its list. A private copy for each list variable is created and initialized for each thread. At the end of the reduction, the reduction variable is applied to all private copies of the shared variable, and the final result is written to the global shared variable.
+Explain the critical and private() declarations used in OpenMP. 
+The critical directive specifies  a region of code that must be executed by only one thread at a time. The private clause declare variable in its list to be private to each thread. 
+
