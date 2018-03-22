@@ -19,7 +19,7 @@ int main(int argc, char *argv[]){
     #endif
     
     #pragma omp parallel for private(x)
-    for (int i = 0; i < 100; ++i)
+    for (int i = 0; i < 100000000; ++i)
     {
         #pragma omp critical
         {
