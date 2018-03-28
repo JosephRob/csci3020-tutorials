@@ -1,0 +1,25 @@
+Student Names:
+Joseph Robertson, Shomari Simpson
+Conceptual Questions
+1.Explain what MPI is, what are it’s benefits?
+
+MPI is a library of routines that can be used to create parallel programs in C and attempts to be practical , portable, efficient and flexible. It is considered a standard, it portable so source code does not need to be heavily modified to work on different platforms. Additionally, it can exploit hardware features to optimize performance.  
+
+2.Explain briefly how MPI supports running on separate computers in a cluster.
+
+MPI  supports distributed program execution on heterogeneous hardware with use of collective operations so that they perform as a group on a group of processes.
+
+3. Name four MPI data types (hint they all start with MPI_).
+
+MPI_CHAR
+MPI_WCHAR
+MPI_SHORT
+MPI_INT
+
+4. Read the documentation for and explain the MPI_Bcast function.
+
+MPI_Bcast is a data movement operation which sends a message from the process with rank “root” to all other processes in the group.
+
+5. Read the documentation for and explain the MPI_Send and MPI_Recv functions.
+
+MPI_Send rs a basic blocking send operation that returns only after the application buffer in the sending task is free for reuse.  MPI_Revc receives a message and blocks until the requested data is available in the application buffer in the receiving task.
