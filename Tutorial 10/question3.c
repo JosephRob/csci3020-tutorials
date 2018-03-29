@@ -18,7 +18,7 @@ int	numtasks,              /* number of tasks in partition */
 	averow, extra, offset, /* used to determine rows sent to each worker */
 	i, j, k, rc;           /* misc */
 double	a[100][100],           /* matrix A to be multiplied */
-	b[100][100],           /* matrix B to be multiplied */
+	//b[100][100],           /* matrix B to be multiplied */
 	c[100][100];           /* result matrix C */
 MPI_Status status;
 
@@ -34,6 +34,7 @@ numworkers = numtasks-1;
 
    if (taskid == MASTER)
    {
+	double b[100][100];
       printf("mpi_mm has started with %d tasks.\n",numtasks);
       printf("Initializing arrays...\n");
       for (i=0; i<100; i++)
@@ -60,6 +61,8 @@ numworkers = numtasks-1;
          offset = offset + rows;
       }
 
+      	MPI_Bcast(b,100*100,MPI_DOUBLE,0,MPI_COMM_WORLD);
+
       /* Receive results from worker tasks */
       mtype = FROM_WORKER;
       for (i=1; i<=numworkers; i++)
@@ -83,11 +86,14 @@ numworkers = numtasks-1;
 
    if (taskid > MASTER)
    {
+	double b[100][100];
       mtype = FROM_MASTER;
       MPI_Recv(&offset, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD, &status);
       MPI_Recv(&rows, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD, &status);
       MPI_Recv(&a, 100*100, MPI_DOUBLE, MASTER, mtype, MPI_COMM_WORLD, &status);
       MPI_Recv(&b, 100*100, MPI_DOUBLE, MASTER, mtype, MPI_COMM_WORLD, &status);
+	MPI_Bcast(b,100*100,MPI_DOUBLE,0,MPI_COMM_WORLD);
+
 
       for (k=0; k<100; k++)
          for (i=0; i<rows; i++)
